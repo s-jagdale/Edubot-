@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduBot — Smart Assistant for Learning | MIT AOE Pune</title>
+  <meta name="description" content="AI-powered educational chatbot for MIT Academy of Engineering, Pune.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <!-- Dark-mode class applied before paint to avoid flash -->
+  <script>
+    (function(){
+      if(localStorage.getItem('darkMode')==='1')
+        document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Neural particle background canvas -->
+<canvas id="neural-bg"></canvas>
+
+<!-- ── NAVBAR ──────────────────────────────────────────── -->
+<nav id="navbar">
+  <a class="nav-brand" href="/">
+    <div class="logo-icon">E</div>
+    <div>
+      <div class="brand-name">EduBot</div>
+      <div class="brand-sub">MIT AOE · SPPU SE</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <span id="nav-user-info" class="user-info"><i class="fa-solid fa-user"></i> Guest</span>
+    <button class="nav-btn" onclick="openStudyPlanModal()" title="Generate Personalized Study Plan">
+      <i class="fa-solid fa-calendar-check"></i> Study Plan
+    </button>
+    <button class="nav-btn" id="quiz-nav-btn" onclick="openQuizModal()" title="Generate AI Quiz">
+      <i class="fa-solid fa-brain"></i> Quiz
+    </button>
+    <button class="nav-btn" id="login-btn" onclick="openLoginModal()">
+      <i class="fa-solid fa-right-to-bracket"></i> Login
+    </button>
+    <button class="nav-btn" id="logout-btn" onclick="doLogout()" style="display:none;">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+    <button class="nav-btn profile-btn" onclick="goToProfile()">
+      <i class="fa-solid fa-user-gear"></i> Profile
+    </button>
+    <!-- Dark Mode Toggle -->
+    <button class="nav-btn dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Toggle Dark Mode">
+      <i class="fa-solid fa-moon" id="dark-icon"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- ── MAIN LAYOUT ──────────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">📚 SPPU SE Curriculum</div>
+
+      <div class="year-card">
+        <div class="year-header" onclick="toggleYear(this)">
+          <span class="year-badge">FY</span> First Year
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted);">▼</span>
+        </div>
+        <div class="year-sems">
+          <button class="sem-btn" onclick="querySemester(1)">📖 Semester 1</button>
+          <button class="sem-btn" onclick="querySemester(2)">📖 Semester 2</button>
+          <button class="sem-btn" onclick="sendChip('Explain C programming key topics and study tips for FY')">⌨️ C Programming</button>
+          <button class="sem-btn" onclick="sendChip('What is Engineering Mathematics 1? Key topics and difficulty.')">📐 Maths I</button>
+        </div>
+      </div>
+
+      <div class="year-card open">
+        <div class="year-header" onclick="toggleYear(this)">
+          <span class="year-badge">SY</span> Second Year
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted);">▼</span>
+        </div>
+        <div class="year-sems">
+          <button class="sem-btn" onclick="querySemester(3)">📖 Semester 3</button>
+          <button class="sem-btn" onclick="querySemester(4)">📖 Semester 4</button>
+          <button class="sem-btn" onclick="sendChip('Explain Data Structures in detail — all topics, Big-O complexity, sorting algorithms')">🌳 Data Structures</button>
+          <button class="sem-btn" onclick="sendChip('Explain OOP concepts in Java — classes, inheritance, polymorphism with examples')">☕ OOP Java</button>
+          <button class="sem-btn" onclick="sendChip('Explain DBMS — ER diagram, SQL, normalization, transactions')">🗄️ DBMS</button>
+          <button class="sem-btn" onclick="sendChip('Explain Operating Systems — scheduling, deadlock, paging, file systems')">💻 OS</button>
+          <button class="sem-btn" onclick="sendChip('Explain Computer Networks — OSI model, TCP/IP, routing, protocols')">🌐 CN</button>
+          <button class="sem-btn" onclick="sendChip('What is Web Technology? HTML, CSS, JS, Node.js, Express full overview')">🕸️ Web Tech</button>
+        </div>
+      </div>
+
+      <div class="year-card">
+        <div class="year-header" onclick="toggleYear(this)">
+          <span class="year-badge">TY</span> Third Year
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted);">▼</span>
+        </div>
+        <div class="year-sems">
+          <button class="sem-btn" onclick="querySemester(5)">📖 Semester 5</button>
+          <button class="sem-btn" onclick="querySemester(6)">📖 Semester 6</button>
+          <button class="sem-btn" onclick="sendChip('Explain Machine Learning algorithms — supervised, unsupervised with Python examples')">🤖 Machine Learning</button>
+          <button class="sem-btn" onclick="sendChip('Explain DAA — Divide and Conquer, Greedy, Dynamic Programming with examples')">🧮 DAA</button>
+          <button class="sem-btn" onclick="sendChip('Explain Cloud Computing — AWS services, Docker, Kubernetes basics')">☁️ Cloud Computing</button>
+          <button class="sem-btn" onclick="sendChip('Explain Information Security — CIA triad, cryptography, OWASP Top 10')">🔐 Info Security</button>
+          <button class="sem-btn" onclick="sendChip('What is IoT? Architecture, Arduino, MQTT protocol explained')">📡 IoT</button>
+        </div>
+      </div>
+
+      <div class="year-card">
+        <div class="year-header" onclick="toggleYear(this)">
+          <span class="year-badge">BE</span> Final Year (BE)
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted);">▼</span>
+        </div>
+        <div class="year-sems">
+          <button class="sem-btn" onclick="querySemester(7)">📖 Semester 7</button>
+          <button class="sem-btn" onclick="querySemester(8)">📖 Semester 8</button>
+          <button class="sem-btn" onclick="sendChip('Explain Deep Learning — CNNs, RNNs, Transformers, GANs with practical tips')">🧠 Deep Learning</button>
+          <button class="sem-btn" onclick="sendChip('Explain Big Data Analytics — Hadoop, Spark, MongoDB, Kafka overview')">📊 Big Data</button>
+          <button class="sem-btn" onclick="sendChip('Best final year project ideas for BE Software Engineering 2025')">🎓 BE Project Ideas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">⚡ Quick Topics</div>
+      <div class="quick-topics">
+        <button class="topic-btn" onclick="openStudyPlanModal()">
+          <span class="t-icon">📅</span> Personalized Study Plan
+        </button>
+        <button class="topic-btn" onclick="openQuizModal()">
+          <span class="t-icon">🧠</span> Generate AI Quiz
+        </button>
+        <button class="topic-btn" onclick="sendChip('What programming languages should I learn year by year in SPPU SE?')">
+          <span class="t-icon">💡</span> Languages by Year
+        </button>
+        <button class="topic-btn" onclick="sendChip('Best project ideas for SY Software Engineering students')">
+          <span class="t-icon">🛠️</span> Project Ideas
+        </button>
+        <button class="topic-btn" onclick="sendChip('How to prepare for placements from MIT AOE Pune? Career roadmap.')">
+          <span class="t-icon">🎯</span> Placement Guide
+        </button>
+        <button class="topic-btn" onclick="sendChip('What tools and software do I need throughout my SE degree?')">
+          <span class="t-icon">🔧</span> Essential Tools
+        </button>
+        <button class="topic-btn" onclick="sendChip('Explain Git and GitHub for college students — full guide')">
+          <span class="t-icon">🐙</span> Git & GitHub
+        </button>
+        <button class="topic-btn" onclick="sendChip('What certifications should I pursue during my B.Tech SE degree?')">
+          <span class="t-icon">🏆</span> Certifications
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CHAT MAIN AREA -->
+  <main id="chat-main">
+    <div id="chat-header">
+      <div class="chat-avatar">E</div>
+      <div class="chat-header-info">
+        <h3>EduBot</h3>
+        <p><span class="online-dot"></span>Smart learning assistant for SPPU SE students</p>
+      </div>
+      <button id="clear-btn" onclick="clearChat()" title="Clear conversation">🗑️ Clear</button>
+    </div>
+
+    <div id="messages">
+      <div class="welcome-state" id="welcome-state">
+        <!-- 3D Neural Orb Canvas — sole hero visual -->
+        <canvas id="orb-canvas" width="200" height="200"></canvas>
+
+        <h2>Hello! I'm EduBot 👋</h2>
+        <p>Your AI-powered academic assistant for MIT Academy of Engineering, Pune.<br>
+           I know the complete SPPU Software Engineering curriculum — FY to BE.</p>
+        <div class="example-cards">
+          <div class="example-card" onclick="tryExample('List all SY Semester 3 subjects with overview')">
+            <strong>📚 Curriculum</strong>List all SY Semester 3 subjects
+          </div>
+          <div class="example-card" onclick="tryExample('Explain Data Structures — arrays, linked lists, trees, graphs with Big-O')">
+            <strong>📖 Concept</strong>Explain Data Structures in detail
+          </div>
+          <div class="example-card" onclick="openStudyPlanModal()">
+            <strong>📅 Study Plan</strong>Generate my personalized study plan
+          </div>
+          <div class="example-card" onclick="tryExample('How do I prepare for placements from MIT AOE? What to focus on each year?')">
+            <strong>🎯 Career</strong>Placement preparation guide
+          </div>
+          <div class="example-card" onclick="tryExample('Explain SQL joins with examples — INNER, LEFT, RIGHT, FULL OUTER JOIN')">
+            <strong>🗄️ DBMS</strong>SQL joins with examples
+          </div>
+          <div class="example-card" onclick="openQuizModal()">
+            <strong>🧠 Quiz</strong>Generate an AI quiz for me
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="char-count"></div>
+
+    <!-- Quick Chips -->
+    <div id="chips-row">
+      <div class="chip sp-chip" onclick="openStudyPlanModal()">📅 Study Plan</div>
+      <div class="chip quiz-chip" onclick="openQuizModal()">🧠 AI Quiz</div>
+      <div class="chip" onclick="sendChip('List FY Semester 1 subjects')">FY Sem 1</div>
+      <div class="chip" onclick="sendChip('List SY Semester 3 subjects')">SY Sem 3</div>
+      <div class="chip" onclick="sendChip('List TY Semester 5 subjects')">TY Sem 5</div>
+      <div class="chip" onclick="sendChip('Explain Data Structures in detail')">Data Structures</div>
+      <div class="chip" onclick="sendChip('Explain OOP in Java with examples')">OOP Java</div>
+      <div class="chip" onclick="sendChip('What is DBMS? SQL and normalization')">DBMS</div>
+      <div class="chip" onclick="sendChip('Explain Machine Learning algorithms with Python')">Machine Learning</div>
+      <div class="chip" onclick="sendChip('Explain OS scheduling algorithms')">OS Scheduling</div>
+      <div class="chip" onclick="sendChip('Placement roadmap from MIT AOE Pune')">Placement Guide</div>
+    </div>
+
+    <!-- Voice Banner -->
+    <div id="voice-banner">
+      <span class="voice-dot"></span>
+      <span id="voice-banner-text">🎤 Listening... speak now</span>
+      <button id="voice-cancel-btn" onclick="stopVoice()">Cancel</button>
+    </div>
+
+    <!-- Input Area -->
+    <div id="input-area">
+      <button id="voice-btn" onclick="toggleVoice()" title="Click to speak — Voice Input">
+        <i class="fa-solid fa-microphone" id="voice-icon"></i>
+      </button>
+      <textarea id="msg-input" placeholder="Ask anything about your SPPU SE subjects, concepts, or tools..." maxlength="1000" rows="1" autocomplete="off" spellcheck="true"></textarea>
+      <button id="send-btn" onclick="sendMessage()" title="Send (Enter)">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ══ STUDY PLAN MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="sp-modal-overlay">
+  <div class="modal sp-modal">
+    <button class="modal-close" onclick="closeStudyPlanModal()">×</button>
+    <h2>📅 Personalized Study Plan</h2>
+    <p>Tell me about yourself and I'll create a customized day-by-day study schedule.</p>
+    <div id="sp-setup">
+      <div class="sp-form-row">
+        <div class="form-group">
+          <label>Year of Study</label>
+          <select id="sp-year" onchange="updateSemesterOptions()">
+            <option value="FY">FY — First Year</option>
+            <option value="SY" selected>SY — Second Year</option>
+            <option value="TY">TY — Third Year</option>
+            <option value="BE">BE — Final Year</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Semester</label>
+          <select id="sp-semester" onchange="updateSubjectCheckboxes()">
+            <option>Semester 3</option>
+            <option>Semester 4</option>
+          </select>
+        </div>
+      </div>
+      <div class="sp-form-row">
+        <div class="form-group">
+          <label>Exam / End Semester Date</label>
+          <input type="date" id="sp-exam-date">
+        </div>
+        <div class="form-group">
+          <label>Available Study Hours Per Day</label>
+          <select id="sp-hours">
+            <option value="2">2 hours</option>
+            <option value="3">3 hours</option>
+            <option value="4" selected>4 hours</option>
+            <option value="5">5 hours</option>
+            <option value="6">6 hours</option>
+            <option value="8">8 hours (Intensive)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Weak Subjects <span class="sp-label-hint">(check all that need extra attention)</span></label>
+        <div id="sp-subjects-list" class="sp-subjects-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Goals / Notes <span class="sp-label-hint">(optional)</span></label>
+        <input type="text" id="sp-goals" placeholder="e.g. Want to score 75%+ in all subjects">
+      </div>
+      <button class="btn-full sp-generate-btn" onclick="generateStudyPlan()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate My Study Plan
+      </button>
+    </div>
+    <div id="sp-loading" style="display:none;text-align:center;padding:30px 20px;">
+      <div class="quiz-loader"></div>
+      <p style="margin-top:16px;color:var(--text-secondary);font-size:14px;">Creating your personalized study plan with AI...<br><small>This takes 5-10 seconds</small></p>
+    </div>
+    <div id="sp-result" style="display:none;">
+      <div class="sp-result-actions">
+        <button class="btn-sp-action" onclick="downloadStudyPlan()"><i class="fa-solid fa-download"></i> Download</button>
+        <button class="btn-sp-action" onclick="resetStudyPlanView(); document.getElementById('sp-setup').style.display='block'; document.getElementById('sp-result').style.display='none';"><i class="fa-solid fa-rotate-right"></i> Regenerate</button>
+      </div>
+      <div id="sp-plan-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ QUIZ MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="quiz-modal-overlay">
+  <div class="modal quiz-modal">
+    <button class="modal-close" onclick="closeQuizModal()">×</button>
+    <h2>🧠 AI Quiz Generator</h2>
+    <p>Enter any topic and get instant MCQs with answers and explanations.</p>
+    <div id="quiz-setup">
+      <div class="form-group">
+        <label>Topic (e.g. DBMS Normalization, Sorting Algorithms, OOP Concepts)</label>
+        <input type="text" id="quiz-topic" placeholder="Enter any subject or topic..." onkeydown="if(event.key==='Enter') startQuiz()">
+      </div>
+      <div class="form-group">
+        <label>Number of Questions</label>
+        <select id="quiz-count">
+          <option value="3">3 Questions (Quick)</option>
+          <option value="5" selected>5 Questions</option>
+          <option value="7">7 Questions</option>
+          <option value="10">10 Questions (Full)</option>
+        </select>
+      </div>
+      <button class="btn-full" onclick="startQuiz()">
+        <i class="fa-solid fa-play"></i> Generate Quiz
+      </button>
+    </div>
+    <div id="quiz-loading" style="display:none;text-align:center;padding:20px;">
+      <div class="quiz-loader"></div>
+      <p style="margin-top:12px;color:var(--text-secondary);">Generating your quiz with AI...</p>
+    </div>
+    <div id="quiz-content" style="display:none;">
+      <div id="quiz-progress-bar"><div id="quiz-progress-fill"></div></div>
+      <div id="quiz-question-area"></div>
+      <div id="quiz-nav">
+        <button class="btn-quiz-nav" id="btn-prev" onclick="quizPrev()">← Prev</button>
+        <span id="quiz-counter">1 / 5</span>
+        <button class="btn-quiz-nav" id="btn-next" onclick="quizNext()">Next →</button>
+      </div>
+      <button class="btn-full" id="btn-submit" onclick="submitQuiz()" style="display:none;margin-top:12px;">
+        Submit & See Results
+      </button>
+    </div>
+    <div id="quiz-results" style="display:none;">
+      <div class="quiz-score-circle">
+        <span id="quiz-score-num">0</span>
+        <small>/ <span id="quiz-total-num">5</span></small>
+      </div>
+      <p id="quiz-score-msg" style="text-align:center;font-size:14px;margin:10px 0;font-weight:600;"></p>
+      <div id="quiz-review"></div>
+      <button class="btn-full" onclick="resetQuiz()" style="margin-top:14px;">
+        <i class="fa-solid fa-rotate-right"></i> Try Another Quiz
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUTH MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modal-title">Welcome Back!</h2>
+    <p id="modal-subtitle">Login to track your chat history.</p>
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email or Username</label>
+        <input type="text" id="login-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="btn-full" onclick="doLogin()">Login</button>
+      <div class="modal-switch">Don't have an account? <a onclick="showRegisterForm()">Register here</a></div>
+    </div>
+    <div id="register-form" style="display:none;">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Sakshi Joshi"></div>
+      <div class="form-group"><label>Username</label><input type="text" id="reg-username" placeholder="sakshi123"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="sakshi@mitaoe.ac.in"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="form-group">
+        <label>Year of Study</label>
+        <select id="reg-year">
+          <option value="FY">FY — First Year</option>
+          <option value="SY" selected>SY — Second Year</option>
+          <option value="TY">TY — Third Year</option>
+          <option value="BE">BE — Final Year</option>
+        </select>
+      </div>
+      <button class="btn-full" onclick="doRegister()">Create Account</button>
+      <div class="modal-switch">Already have an account? <a onclick="showLoginForm()">Login here</a></div>
+    </div>
+    <p class="error-msg" id="auth-error"></p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══ ANIMATIONS & DARK MODE SCRIPT ══════════════════════ -->
+<script>
+/* ── Dark Mode ─────────────────────────────────────────── */
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('darkMode', isDark ? '1' : '0');
+  const icon = document.getElementById('dark-icon');
+  if (icon) {
+    icon.style.transform = 'rotate(180deg)';
+    setTimeout(() => {
+      icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      icon.style.transform = 'rotate(0deg)';
+    }, 200);
+  }
+}
+
+// Sync icon on load
+window.addEventListener('DOMContentLoaded', function() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const icon = document.getElementById('dark-icon');
+  if (icon && isDark) icon.className = 'fa-solid fa-sun';
+
+  // Init animations after DOM ready
+  initNeuralBackground();
+  initOrbAnimation();
+});
+
+/* ── Neural Particle Background ────────────────────────── */
+function initNeuralBackground() {
+  const canvas = document.getElementById('neural-bg');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COUNT = 55;
+  const CONN_DIST = 130;
+  const particles = Array.from({length: COUNT}, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.35,
+    vy: (Math.random() - 0.5) * 0.35,
+    r:  Math.random() * 1.8 + 0.5
+  }));
+
+  let mouseX = -9999, mouseY = -9999;
+  document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    const dark = document.documentElement.classList.contains('dark');
+    const pc = dark ? '129,140,248' : '79,70,229';
+    const ac = dark ? '34,211,238'  : '8,145,178';
+
+    for (const p of particles) {
+      // Mouse repulsion
+      const dx = p.x - mouseX, dy = p.y - mouseY;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < 8000) {
+        const d = Math.sqrt(d2);
+        p.vx += (dx / d) * 0.4;
+        p.vy += (dy / d) * 0.4;
+      }
+      // Damping
+      p.vx *= 0.99; p.vy *= 0.99;
+      // Cap speed
+      const spd = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
+      if (spd > 1.2) { p.vx *= 1.2/spd; p.vy *= 1.2/spd; }
+
+      p.x = (p.x + p.vx + W) % W;
+      p.y = (p.y + p.vy + H) % H;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${pc},0.5)`;
+      ctx.fill();
+    }
+
+    for (let i = 0; i < COUNT; i++) {
+      for (let j = i+1; j < COUNT; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < CONN_DIST) {
+          const op = (1 - dist/CONN_DIST) * 0.22;
+          ctx.strokeStyle = `rgba(${dist < 60 ? ac : pc},${op})`;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ── 3D Neural Orb (rotating dot sphere) ──────────────── */
+function initOrbAnimation() {
+  const canvas = document.getElementById('orb-canvas');
+  if (!canvas) return;
+
+  const DPR  = window.devicePixelRatio || 1;
+  const SIZE = 200;
+  canvas.style.width  = SIZE + 'px';
+  canvas.style.height = SIZE + 'px';
+  canvas.width  = SIZE * DPR;
+  canvas.height = SIZE * DPR;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  // Fibonacci-lattice sphere points
+  const N = 110;
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  const pts = Array.from({length: N}, (_, i) => {
+    const y = 1 - (i / (N-1)) * 2;
+    const r = Math.sqrt(1 - y*y);
+    const theta = goldenAngle * i;
+    return { x: Math.cos(theta)*r, y, z: Math.sin(theta)*r };
+  });
+
+  let angleY = 0, angleX = 0.18, t = 0;
+
+  function rotate(p, ax, ay) {
+    // X rotation
+    const y1 =  p.y*Math.cos(ax) - p.z*Math.sin(ax);
+    const z1 =  p.y*Math.sin(ax) + p.z*Math.cos(ax);
+    // Y rotation
+    const x2 =  p.x*Math.cos(ay) + z1*Math.sin(ay);
+    const z2 = -p.x*Math.sin(ay) + z1*Math.cos(ay);
+    return { x: x2, y: y1, z: z2 };
+  }
+
+  const CX = SIZE/2, CY = SIZE/2, R = 74;
+
+  function draw() {
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    const dark = document.documentElement.classList.contains('dark');
+    const PC = dark ? '129,140,248' : '79,70,229';  // primary
+    const AC = dark ? '34,211,238'  : '8,145,178';  // accent
+
+    const rotated = pts.map(p => rotate(p, angleX, angleY));
+    const sorted  = rotated.map((p,i) => ({...p,i})).sort((a,b) => a.z - b.z);
+
+    // Draw connections first
+    for (let i = 0; i < sorted.length; i++) {
+      for (let j = i+1; j < sorted.length; j++) {
+        const a = sorted[i], b = sorted[j];
+        const d = Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2);
+        if (d < 0.62) {
+          const avgZ = (a.z + b.z) / 2;
+          const depth = (avgZ + 1) / 2;
+          const op = depth * (1 - d/0.62) * 0.38;
+          const color = depth > 0.55 ? AC : PC;
+          ctx.strokeStyle = `rgba(${color},${op})`;
+          ctx.lineWidth = 0.55;
+          ctx.beginPath();
+          ctx.moveTo(CX + a.x*R, CY - a.y*R);
+          ctx.lineTo(CX + b.x*R, CY - b.y*R);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw points on top
+    for (const p of sorted) {
+      const depth = (p.z + 1) / 2;
+      const sx = CX + p.x*R, sy = CY - p.y*R;
+      const pr = 0.8 + depth * 2.2;
+      const op = 0.18 + depth * 0.82;
+      const color = depth > 0.72 ? AC : PC;
+
+      // Glow halo for front points
+      if (depth > 0.82) {
+        const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, pr*3.5);
+        g.addColorStop(0, `rgba(${color},${op*0.45})`);
+        g.addColorStop(1, `rgba(${color},0)`);
+        ctx.beginPath();
+        ctx.arc(sx, sy, pr*3.5, 0, Math.PI*2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(sx, sy, pr, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${color},${op})`;
+      ctx.fill();
+    }
+
+    // Gentle breathing pulse on rotation speed
+    const pulse = 1 + Math.sin(t * 0.8) * 0.0015;
+    angleY += 0.006 * pulse;
+    angleX += 0.0018;
+    t++;
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+
+<script src="js/chat.js"></script>
+</body>
+</html>
